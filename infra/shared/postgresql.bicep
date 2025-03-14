@@ -42,6 +42,7 @@ param dnsZoneFqdn string = '${dnsZoneName}.postgres.database.azure.com'
 @description('The database admin user for the PostgreSQL server.')
 param databaseAdminUser string
 
+@secure()
 @description('The database admin password for the PostgreSQL server.')
 param databaseAdminPassword string
 

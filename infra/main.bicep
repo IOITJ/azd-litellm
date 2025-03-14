@@ -105,15 +105,6 @@ module postgresqlDatabase './shared/postgresql_database.bicep' = {
   scope: rg
 }
 
-module fetchLatestContainerImage './shared/fetch-container-image.bicep' = {
-  name: '${containerAppName}-fetch-image'
-  params: {
-    exists: litellmContainerAppExists
-    containerAppName: containerAppName
-  }
-  scope: rg
-}
-
 // Deploy LiteLLM Container App via module call.
 module litellm './app/litellm.bicep' = {
   name: 'litellm'
@@ -122,8 +113,9 @@ module litellm './app/litellm.bicep' = {
     containerAppsEnvironmentName: appsEnv.outputs.name
     postgresqlConnectionString: 'postgresql://${databaseAdminUser}:${databaseAdminPassword}@${postgresql.outputs.fqdn}/${databaseName}'
 
+    litellmContainerAppExists: litellmContainerAppExists
+
     containerRegistryName: containerRegistry.outputs.name
-    containerImage: fetchLatestContainerImage.outputs.?containers[?0].?image ?? 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
     containerPort: containerPort
     containerMinReplicaCount: containerMinReplicaCount
     containerMaxReplicaCount: containerMaxReplicaCount
@@ -133,6 +125,6 @@ module litellm './app/litellm.bicep' = {
 
 
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
-output LITELLM_CONTAINER_APP_EXISTS bool = true
+//output LITELLM_CONTAINER_APP_EXISTS bool = true
 // output LITELLM_CONTAINERAPP_FQDN string = litellm.outputs.containerAppFQDN
 // output POSTGRESQL_FQDN string = postgresql.outputs.fqdn
