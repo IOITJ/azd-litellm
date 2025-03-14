@@ -66,6 +66,10 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
           image: containerImage
           env: [
             {
+              name: 'LITELLM_LOG'
+              value: 'DEBUG'
+            }
+            {
               name: 'DATABASE_URL'
               secretRef: 'database-url'
             }
