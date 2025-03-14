@@ -48,6 +48,8 @@ To use this template, follow these steps using the [Azure Developer CLI](https:/
 
 ![Diagram of Azure Resources provisioned with this template](assets/architecture.png)
 
+In addition to deploying Azure Resources to host LiteLLM, this template includes a `DOCKERFILE` that builds a LiteLLM docker container that builds the LiteLLM proxy server with Admin UI using Python from the `litellm` pip package.
+
 ## Azure Resources
 
 These are the Azure resources that are deployed with this template:
@@ -56,6 +58,7 @@ These are the Azure resources that are deployed with this template:
 - **Container App** - The hosting for the [LiteLLM](https://www.litellm.ai) Docker Container
 - **Azure Database for PostgreSQL flexible server** - The PostgreSQL server to host the LiteLLM database
 - **Log Analytics** and **Application Insights** - Logging for the Container Apps Environment
+- **Container Registry** - Used to deploy the custom Docker container for LiteLLM
 
 ## Author
 
