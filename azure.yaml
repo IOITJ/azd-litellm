@@ -14,8 +14,12 @@ infra:
 
 services:
   litellm:
+    project: ./src/litellm
     host: containerapp
-    image: litellm/litellm:latest
+    language: python
+    docker:
+      context: ./
+      path: DOCKERFILE
     resources:
       cpu: 0.5
       memory: 1Gi

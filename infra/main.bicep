@@ -31,12 +31,16 @@ param databaseAdminUser string = 'litellmuser'
 @secure()
 param databaseAdminPassword string
 
+param litellmContainerAppExists bool
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroupName, environmentName, location))
 var tags = {
   'azd-env-name': environmentName
   'azd-template': 'https://github.com/Build5Nines/azd-litellm'
 }
+
+var containerAppName = '${abbrs.appContainerApps}litellm-${resourceToken}'
 
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -52,6 +56,16 @@ module monitoring './shared/monitoring.bicep' = {
     tags: tags
     logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}litellm-${resourceToken}'
     applicationInsightsName: '${abbrs.insightsComponents}litellm-${resourceToken}'
+  }
+  scope: rg
+}
+
+module containerRegistry './shared/container-registry.bicep' = {
+  name: 'cotainer-registry'
+  params: {
+    location: location
+    tags: tags
+    name: '${abbrs.containerRegistryRegistries}${resourceToken}'
   }
   scope: rg
 }
@@ -91,14 +105,25 @@ module postgresqlDatabase './shared/postgresql_database.bicep' = {
   scope: rg
 }
 
+module fetchLatestContainerImage './shared/fetch-container-image.bicep' = {
+  name: '${containerAppName}-fetch-image'
+  params: {
+    exists: litellmContainerAppExists
+    containerAppName: containerAppName
+  }
+  scope: rg
+}
+
 // Deploy LiteLLM Container App via module call.
 module litellm './app/litellm.bicep' = {
   name: 'litellm'
   params: {
-    name: '${abbrs.appContainerApps}litellm-${resourceToken}'
+    name: containerAppName
     containerAppsEnvironmentName: appsEnv.outputs.name
     postgresqlConnectionString: 'postgresql://${databaseAdminUser}:${databaseAdminPassword}@${postgresql.outputs.fqdn}/${databaseName}'
 
+    containerRegistryName: containerRegistry.outputs.name
+    containerImage: fetchLatestContainerImage.outputs.?containers[?0].?image ?? 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
     containerPort: containerPort
     containerMinReplicaCount: containerMinReplicaCount
     containerMaxReplicaCount: containerMaxReplicaCount
@@ -106,6 +131,8 @@ module litellm './app/litellm.bicep' = {
   scope: rg
 }
 
-// Outputs for convenience
-output litellm_containerapp_fqdn string = litellm.outputs.containerAppFQDN
-output postgresql_fqdn string = postgresql.outputs.fqdn
+
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
+output LITELLM_CONTAINER_APP_EXISTS bool = true
+// output LITELLM_CONTAINERAPP_FQDN string = litellm.outputs.containerAppFQDN
+// output POSTGRESQL_FQDN string = postgresql.outputs.fqdn
