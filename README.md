@@ -15,7 +15,7 @@ To use this template, follow these steps using the [Azure Developer CLI](https:/
 2. Initialize this template using `azd init`:
 
     ```bash
-    azd init --template build5nines/azd-react-bootstrap-dashboard
+    azd init --template build5nines/azd-litellm
     ```
 
 3. Use `azd up` to provision your Azure infrastructure and deploy the web application to Azure.
@@ -23,6 +23,26 @@ To use this template, follow these steps using the [Azure Developer CLI](https:/
     ```bash
     azd up
     ```
+
+4. `azd up` will prompt you to enter these additional secret and password parameters used to configure LiteLLM:
+
+    - `databaseAdminPassword`: The Admin password use to connect to the PostgreSQL database.
+    - `litellm_master_key`: The LiteLLM Master Key. This is the LiteLLM proxy admin key.
+    - `litellm_salt_key`: The LiteLLM Salt Key. This cannot be changed once set, and is used to encrypt model keys in the database.
+
+    Be sure to save these secrets and passwords to keep them safe.
+
+5. Once the template has finished provisioning all resources, and Azure Container Apps has completed deploying the LiteLLM container, you can access both the Swagger UI and Admin UI for LiteLLM.
+
+    This can be done by navigating to the `litellm` service **Endpoint** returned from the `azd` deployment step using your web browser. _You can also find this endpoint by navigating to the **Container App** within the **Azure Portal** then locating the **Application Url**._
+
+    Navigating to the Endpoint URL will access Swagger UI:
+
+    ![Screenshot of LiteLLM Swagger UI]()
+
+    Navigating to `/ui` on the Endpoint URL will access the LiteLLM Admin UI where Models and other things can be configured:
+
+    ![Screenshot of LiteLLM Admin UI]()
 
 ## Architecture Diagram
 

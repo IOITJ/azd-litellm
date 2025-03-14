@@ -10,12 +10,6 @@
       },
       "litellmContainerAppExists": {
         "value": "${LITELLM_CONTAINER_APP_EXISTS=false}"
-      },
-      "litellm_master_key": {
-        "value": "${LITELLM_MASTER_KEY=guid(subscription().tenantId)}"
-      },
-      "litellm_salt_key": {
-        "value": "${LITELLM_SALT_KEY=guid(subscription().tenantId)}"
       }
     }
   }
