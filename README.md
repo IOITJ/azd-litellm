@@ -32,17 +32,19 @@ To use this template, follow these steps using the [Azure Developer CLI](https:/
 
     Be sure to save these secrets and passwords to keep them safe.
 
-5. Once the template has finished provisioning all resources, and Azure Container Apps has completed deploying the LiteLLM container, you can access both the Swagger UI and Admin UI for LiteLLM.
+5. Once the template has finished provisioning all resources, and Azure Container Apps has completed deploying the LiteLLM container _(this can take a minute or so after `azd up` completes to finish)_, you can access both the Swagger UI and Admin UI for LiteLLM.
 
     This can be done by navigating to the `litellm` service **Endpoint** returned from the `azd` deployment step using your web browser. _You can also find this endpoint by navigating to the **Container App** within the **Azure Portal** then locating the **Application Url**._
 
+    ![Screenshot of terminal with azd up completed](/assets/screenshot-azd-up-completed.png)
+
     Navigating to the Endpoint URL will access Swagger UI:
 
-    ![Screenshot of LiteLLM Swagger UI]()
+    ![Screenshot of LiteLLM Swagger UI](/assets/screenshot-litellm-swagger-ui.png)
 
     Navigating to `/ui` on the Endpoint URL will access the LiteLLM Admin UI where Models and other things can be configured:
 
-    ![Screenshot of LiteLLM Admin UI]()
+    ![Screenshot of LiteLLM Admin UI](/assets/screenshot-litellm-admin-ui.png)
 
 ## Architecture Diagram
 
