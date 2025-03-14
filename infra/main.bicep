@@ -15,18 +15,27 @@ param resourceGroupName string
 @description('Port exposed by the LiteLLM container.')
 param containerPort int = 80
 
-@description('Desired replica count for LiteLLM containers.')
-param containerReplicaCount int = 2
+@description('Minimum replica count for LiteLLM containers.')
+param containerMinReplicaCount int = 2
+
+@description('Maximum replica count for LiteLLM containers.')
+param containerMaxReplicaCount int = 3
 
 @description('Name of the PostgreSQL database.')
 param databaseName string = 'litellmdb'
 
+@description('Name of the PostgreSQL database admin user.')
+param databaseAdminUser string = 'litellmuser'
+
+@description('Password for the PostgreSQL database admin user.')
+@secure()
+param databaseAdminPassword string
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroupName, environmentName, location))
 var tags = {
   'azd-env-name': environmentName
-  'azd-template': 'Build5Nines/azd-react-bootstrap-dashboard'
+  'azd-template': 'https://github.com/Build5Nines/azd-litellm'
 }
 
 // Organize resources in a resource group
@@ -52,7 +61,7 @@ module appsEnv './shared/apps-env.bicep' = {
   params: {
     name: '${abbrs.appManagedEnvironments}litellm-${resourceToken}'
     location: location
-    tags: tags //union(tags, { 'azd-service-name': 'web' })
+    tags: tags 
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
   }
@@ -66,32 +75,8 @@ module postgresql './shared/postgresql.bicep' = {
     name: '${abbrs.dBforPostgreSQLServers}litellm-${resourceToken}'
     location: location
     tags: tags
-  }
-  scope: rg
-}
-
-// Deploy LiteLLM Container App via module call.
-module litellm './app/litellm.bicep' = {
-  name: 'litellm'
-  params: {
-    name: '${abbrs.appContainerApps}litellm-${resourceToken}'
-    containerAppsEnvironmentName: appsEnv.outputs.name
-    postgresqlConnectionString: 'Host=${postgresql.outputs.fqdn};Database=${databaseName};Ssl Mode=Require;Trust Server Certificate=false;'
-
-    containerPort: containerPort
-    containerReplicaCount: containerReplicaCount
-  }
-  scope: rg
-}
-
-// Deploy PostgreSQL Administrator for litellm SystemAssigned Identity
-module postgresqlLitellmAdmin './shared/postgresql_administrator.bicep' = {
-  name: 'postgresqlLitellmAdmin'
-  params: {
-    postgresqlServerName: postgresql.outputs.name
-    principalName: litellm.outputs.containerAppName
-    principalId: litellm.outputs.identityPrincipalId
-    principalType: 'ServicePrincipal'
+    databaseAdminUser: databaseAdminUser
+    databaseAdminPassword: databaseAdminPassword
   }
   scope: rg
 }
@@ -104,9 +89,21 @@ module postgresqlDatabase './shared/postgresql_database.bicep' = {
     databaseName: databaseName
   }
   scope: rg
-  dependsOn: [
-    postgresqlLitellmAdmin // be sure to create the admin before the database, so it can be granted permissions correctly
-  ]
+}
+
+// Deploy LiteLLM Container App via module call.
+module litellm './app/litellm.bicep' = {
+  name: 'litellm'
+  params: {
+    name: '${abbrs.appContainerApps}litellm-${resourceToken}'
+    containerAppsEnvironmentName: appsEnv.outputs.name
+    postgresqlConnectionString: 'postgresql://${databaseAdminUser}:${databaseAdminPassword}@${postgresql.outputs.fqdn}/${databaseName}'
+
+    containerPort: containerPort
+    containerMinReplicaCount: containerMinReplicaCount
+    containerMaxReplicaCount: containerMaxReplicaCount
+  }
+  scope: rg
 }
 
 // Outputs for convenience

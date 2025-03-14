@@ -39,6 +39,12 @@ param dnsZoneName string = name
 @description('Fully Qualified DNS Private Zone')
 param dnsZoneFqdn string = '${dnsZoneName}.postgres.database.azure.com'
 
+@description('The database admin user for the PostgreSQL server.')
+param databaseAdminUser string
+
+@description('The database admin password for the PostgreSQL server.')
+param databaseAdminPassword string
+
 @description('High Availability Mode')
 @allowed([
   'ZoneRedundant'
@@ -65,9 +71,11 @@ resource postgresqlServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-11-01-
     tier: skuTier
   }
   properties: {
+    administratorLogin: databaseAdminUser
+    administratorLoginPassword: databaseAdminPassword
     authConfig: {
       activeDirectoryAuth: 'Enabled'
-      passwordAuth: 'Disabled'
+      passwordAuth: 'Enabled'
       tenantId: subscription().tenantId
     }
     storage: {

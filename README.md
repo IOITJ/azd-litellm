@@ -24,13 +24,16 @@ To use this template, follow these steps using the [Azure Developer CLI](https:/
 
 ## Architecture Diagram
 
-![Diagram of Azure Resources provisioned with this template]()
+![Diagram of Azure Resources provisioned with this template](assets/architecture.png)
 
 ## Azure Resources
 
 These are the Azure resources that are deployed with this template:
 
-- TODO
+- **Container Apps Environment** - The environment for hosting the Container App
+- **Container App** - The hosting for the [LiteLLM](https://www.litellm.ai) Docker Container
+- **Azure Database for PostgreSQL flexible server** - The PostgreSQL server to host the LiteLLM database
+- **Log Analytics** and **Application Insights** - Logging for the Container Apps Environment
 
 ## Author
 

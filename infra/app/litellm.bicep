@@ -22,8 +22,11 @@ param containerImage string  = 'litellm/litellm:latest'
 @description('Port exposed by the LiteLLM container.')
 param containerPort int
 
-@description('Desired replica count for LiteLLM containers.')
-param containerReplicaCount int
+@description('Minimum replica count for LiteLLM containers.')
+param containerMinReplicaCount int
+
+@description('Maximum replica count for LiteLLM containers.')
+param containerMaxReplicaCount int
 
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-04-01-preview' existing = {
@@ -45,32 +48,45 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
         targetPort: containerPort
         transport: 'auto'
       }
-      identitySettings: {
-        identity: 'system'
-        lifecycle: 'All'
-      }
+      secrets: [
+        {
+          name: 'database-url'
+          value: postgresqlConnectionString
+        }
+        {
+          name: 'azure-openai-api-key'
+          value: ''
+        }
+      ]
     }
     template: {
       containers: [
         {
           name: containerName
           image: containerImage
-          // resources: {
-          //   cpu: 0.5
-          //   memory: '1Gi'
-          // }
-          // Pass the PostgreSQL connection string via an environment variable.
           env: [
             {
-              name: 'POSTGRESQL_CONNECTION_STRING'
-              value: postgresqlConnectionString
+              name: 'DATABASE_URL'
+              secretRef: 'database-url'
+            }
+            {
+              name: 'AZURE_API_KEY'
+              secretRef: 'azure-openai-api-key'
+            }
+            {
+              name: 'AZURE_API_BASE'
+              value: 'https://b59-knowledge-oai.openai.azure.com/'
+            }
+            {
+              name: 'AZURE_API_VERSION'
+              value: '2023-05-15'
             }
           ]
         }
       ]
       scale: {
-        minReplicas: containerReplicaCount
-        maxReplicas: containerReplicaCount
+        minReplicas: containerMinReplicaCount
+        maxReplicas: containerMaxReplicaCount
       }
     }
   }
