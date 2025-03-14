@@ -78,6 +78,14 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
               secretRef: 'azure-openai-api-key'
             }
             {
+              name: 'OPENAI_API_KEY'
+              secretRef: 'azure-openai-api-key'
+            }
+            {
+              name: 'AZURE_OPENAI_API_KEY'
+              secretRef: 'azure-openai-api-key'
+            }
+            {
               name: 'AZURE_API_BASE'
               value: 'https://b59-knowledge-oai.openai.azure.com/'
             }
