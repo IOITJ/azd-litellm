@@ -1,7 +1,5 @@
 # azd-litellm ![Awesome Badge](https://awesome.re/badge-flat2.svg)
 
-# IN PROGRESS - NOT WORKING
-
 An `azd` template to deploy [LiteLLM](https://www.litellm.ai/) running in Azure Container Apps using an Azure PostgreSQL database.
 
 To use this template, follow these steps using the [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview):
