@@ -113,15 +113,15 @@ module postgresqlDatabase './shared/postgresql_database.bicep' = {
   scope: rg
 }
 
-module keyvault './shared/keyvault.bicep' = {
-  name: 'keyvault'
-  params: {
-    name: '${abbrs.keyVaultVaults}litellm-${resourceToken}'
-    location: location
-    tags: tags
-  }
-  scope: rg
-}
+// module keyvault './shared/keyvault.bicep' = {
+//   name: 'keyvault'
+//   params: {
+//     name: '${abbrs.keyVaultVaults}litellm-${resourceToken}'
+//     location: location
+//     tags: tags
+//   }
+//   scope: rg
+// }
 
 // Deploy LiteLLM Container App via module call.
 module litellm './app/litellm.bicep' = {
@@ -129,9 +129,8 @@ module litellm './app/litellm.bicep' = {
   params: {
     name: containerAppName
     containerAppsEnvironmentName: appsEnv.outputs.name
-    keyvaultName: keyvault.outputs.name
+    // keyvaultName: keyvault.outputs.name
     postgresqlConnectionString: 'postgresql://${databaseAdminUser}:${databaseAdminPassword}@${postgresql.outputs.fqdn}/${databaseName}'
-
     litellm_master_key: litellm_master_key
     litellm_salt_key: litellm_salt_key
 

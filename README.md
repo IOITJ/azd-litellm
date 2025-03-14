@@ -34,7 +34,6 @@ These are the Azure resources that are deployed with this template:
 
 - **Container Apps Environment** - The environment for hosting the Container App
 - **Container App** - The hosting for the [LiteLLM](https://www.litellm.ai) Docker Container
-- **Key Vault** - For storing secrets for LiteLLM configuration (Master Key, Salt Key, and Database Url)
 - **Azure Database for PostgreSQL flexible server** - The PostgreSQL server to host the LiteLLM database
 - **Log Analytics** and **Application Insights** - Logging for the Container Apps Environment
 

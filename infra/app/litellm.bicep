@@ -28,8 +28,8 @@ param containerMinReplicaCount int
 @description('Maximum replica count for LiteLLM containers.')
 param containerMaxReplicaCount int
 
-@description('Name of the Key Vault.')
-param keyvaultName string
+// @description('Name of the Key Vault.')
+// param keyvaultName string
 
 @description('Master key for LiteLLM. Your master key for the proxy server.')
 @secure()
@@ -52,9 +52,9 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-04-01-
   name: containerAppsEnvironmentName
 }
 
-resource keyvault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  name: keyvaultName
-}
+// resource keyvault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
+//   name: keyvaultName
+// }
 
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
@@ -72,19 +72,19 @@ resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource keyvaultAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2023-07-01' = {
-  parent: keyvault
-  name: 'add'
-  properties: {
-    accessPolicies: [
-      {
-        objectId: identity.properties.principalId
-        permissions: { secrets: [ 'get', 'list' ] }
-        tenantId: subscription().tenantId
-      }
-    ]
-  }
-}
+// resource keyvaultAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2023-07-01' = {
+//   parent: keyvault
+//   name: 'add'
+//   properties: {
+//     accessPolicies: [
+//       {
+//         objectId: identity.properties.principalId
+//         permissions: { secrets: [ 'get', 'list' ] }
+//         tenantId: subscription().tenantId
+//       }
+//     ]
+//   }
+// }
 
 module fetchLatestContainerImage '../shared/fetch-container-image.bicep' = {
   name: '${name}-fetch-image'
@@ -94,34 +94,34 @@ module fetchLatestContainerImage '../shared/fetch-container-image.bicep' = {
   }
 }
 
-module keyvaultSecretMasterKey '../shared/keyvault-secret.bicep' = {
-  name: '${name}-master-key'
-  params: {
-    keyvaultName: keyvaultName
-    secretName: 'LITELLM_MASTER_KEY'
-    secretValue: litellm_master_key
-  }
-}
+// module keyvaultSecretMasterKey '../shared/keyvault-secret.bicep' = {
+//   name: '${name}-master-key'
+//   params: {
+//     keyvaultName: keyvaultName
+//     secretName: 'LITELLM_MASTER_KEY'
+//     secretValue: litellm_master_key
+//   }
+// }
 
-module keyvaultSecretSaltKey '../shared/keyvault-secret.bicep' = {
-  name: '${name}-salt-key'
-  params: {
-    keyvaultName: keyvaultName
-    secretName: 'LITELLM_SALT_KEY'
-    secretValue: litellm_salt_key
-  }
-}
+// module keyvaultSecretSaltKey '../shared/keyvault-secret.bicep' = {
+//   name: '${name}-salt-key'
+//   params: {
+//     keyvaultName: keyvaultName
+//     secretName: 'LITELLM_SALT_KEY'
+//     secretValue: litellm_salt_key
+//   }
+// }
 
-module keyVaultSecretPostgreSQLConnectionString '../shared/keyvault-secret.bicep' = {
-  name: '${name}-postgresql-connection-string'
-  params: {
-    keyvaultName: keyvaultName
-    secretName: 'DATABASE_URL'
-    secretValue: postgresqlConnectionString
-  }
-}
+// module keyVaultSecretPostgreSQLConnectionString '../shared/keyvault-secret.bicep' = {
+//   name: '${name}-postgresql-connection-string'
+//   params: {
+//     keyvaultName: keyvaultName
+//     secretName: 'DATABASE_URL'
+//     secretValue: postgresqlConnectionString
+//   }
+// }
 
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
+resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
   tags: union(tags, {'azd-service-name':  'litellm' })
@@ -146,18 +146,21 @@ resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
       secrets: [
         {
           name: 'litellm-master-key'
-          identity: identity.id
-          keyVaultUrl: 'https://${keyvault.name}.vault.azure.net/secrets/${keyvaultSecretMasterKey.outputs.secretName}'
+          value: litellm_master_key
+          // identity: identity.id
+          // keyVaultUrl: 'https://${keyvault.name}.vault.azure.net/secrets/${keyvaultSecretMasterKey.outputs.secretName}'
         }
         {
           name: 'litellm-salt-key'
-          identity: identity.id
-          keyVaultUrl: 'https://${keyvault.name}.vault.azure.net/secrets/${keyvaultSecretSaltKey.outputs.secretName}'
+          value: litellm_salt_key
+          // identity: identity.id
+          // keyVaultUrl: 'https://${keyvault.name}.vault.azure.net/secrets/${keyvaultSecretSaltKey.outputs.secretName}'
         }
         {
           name: 'database-url'
-          identity: identity.id
-          keyVaultUrl: 'https://${keyvault.name}.vault.azure.net/secrets/${keyVaultSecretPostgreSQLConnectionString.outputs.secretName}'
+          value: postgresqlConnectionString
+          // identity: identity.id
+          // keyVaultUrl: 'https://${keyvault.name}.vault.azure.net/secrets/${keyVaultSecretPostgreSQLConnectionString.outputs.secretName}'
         }
       ]
     }
