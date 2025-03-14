@@ -33,6 +33,14 @@ param databaseAdminPassword string
 
 param litellmContainerAppExists bool
 
+@description('Master key for LiteLLM. Your master key for the proxy server.')
+@secure()
+param litellm_master_key string
+
+@description('Salt key for LiteLLM. (CAN NOT CHANGE ONCE SET)')
+@secure()
+param litellm_salt_key string
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroupName, environmentName, location))
 var tags = {
@@ -105,13 +113,27 @@ module postgresqlDatabase './shared/postgresql_database.bicep' = {
   scope: rg
 }
 
+module keyvault './shared/keyvault.bicep' = {
+  name: 'keyvault'
+  params: {
+    name: '${abbrs.keyVaultVaults}litellm-${resourceToken}'
+    location: location
+    tags: tags
+  }
+  scope: rg
+}
+
 // Deploy LiteLLM Container App via module call.
 module litellm './app/litellm.bicep' = {
   name: 'litellm'
   params: {
     name: containerAppName
     containerAppsEnvironmentName: appsEnv.outputs.name
+    keyvaultName: keyvault.outputs.name
     postgresqlConnectionString: 'postgresql://${databaseAdminUser}:${databaseAdminPassword}@${postgresql.outputs.fqdn}/${databaseName}'
+
+    litellm_master_key: litellm_master_key
+    litellm_salt_key: litellm_salt_key
 
     litellmContainerAppExists: litellmContainerAppExists
 
@@ -125,6 +147,11 @@ module litellm './app/litellm.bicep' = {
 
 
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
+output LITELLM_MASTER_KEY string = litellm_master_key
+output LITELLM_SALT_KEY string = litellm_salt_key
+
 //output LITELLM_CONTAINER_APP_EXISTS bool = true
 // output LITELLM_CONTAINERAPP_FQDN string = litellm.outputs.containerAppFQDN
 // output POSTGRESQL_FQDN string = postgresql.outputs.fqdn
+
+
