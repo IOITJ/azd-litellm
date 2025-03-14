@@ -32,3 +32,6 @@ These are the Azure resources that are deployed with this template:
 
 - TODO
 
+## Author
+
+This `azd` template was written by [Chris Pietschmann](https://pietschsoft.com), founder of [Build5Nines](https://build5nines.com), Microsoft MVP, HashiCorp Ambassador, and Microsoft Certified Trainer (MCT).
