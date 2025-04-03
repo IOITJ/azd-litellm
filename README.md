@@ -60,6 +60,20 @@ These are the Azure resources that are deployed with this template:
 - **Log Analytics** and **Application Insights** - Logging for the Container Apps Environment
 - **Container Registry** - Used to deploy the custom Docker container for LiteLLM
 
+## How to use Specific Version of LiteLLM
+
+By default, this project uses the latest version of LiteLLM. There may be reasons you want to run a specific version of LiteLLM. This project deploys LiteLLM using its Python package, and you can update the version referenced to target a specific version of LiteLLM if necessary.
+
+To do so, you can edit the [`/src/litellm/requirements.txt`](/src/litellm/requirements.txt) file. This file is the Python `pip` requirements file that specifies the PIP packages and their versions to use. The `litellm[proxy]` package is the package that is LiteLLM. You can find the available release versions on the [`litellm` PIP package page.](https://pypi.org/project/litellm/)
+
+Here's an example of the `requirements.txt` file reference of `litellm` package specifying the v1.65.1 release:
+
+```text
+litellm[proxy]==1.65.1
+```
+
+By default, this project does not specify a version; which tells PIP to pull down the latest release. I hope this helps if you find yourself needing to run a specific version of LiteLLM.
+
 ## Author
 
 This `azd` template was written by [Chris Pietschmann](https://pietschsoft.com), founder of [Build5Nines](https://build5nines.com), Microsoft MVP, HashiCorp Ambassador, and Microsoft Certified Trainer (MCT).
