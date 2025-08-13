@@ -12,14 +12,14 @@ param location string
 @description('Name of the resource group to create or use')
 param resourceGroupName string 
 
-/* @description('Port exposed by the LiteLLM container.')
-param containerPort int = 80
+@description('Port exposed by the Tika container.')
+param containerPort int = 9998
 
-@description('Minimum replica count for LiteLLM containers.')
+@description('Minimum replica count for Tika containers.')
 param containerMinReplicaCount int = 2
 
-@description('Maximum replica count for LiteLLM containers.')
-param containerMaxReplicaCount int = 3 */
+@description('Maximum replica count for Tika containers.')
+param containerMaxReplicaCount int = 3 
 
 @description('Name of the PostgreSQL database.')
 param databaseName string = 'litellmdb'
@@ -31,9 +31,9 @@ param databaseAdminUser string = 'litellmuser'
 @secure()
 param databaseAdminPassword string
 
-/* param litellmContainerAppExists bool
+param tikaContainerAppExists bool
 
-@description('Master key for LiteLLM. Your master key for the proxy server.')
+/* @description('Master key for LiteLLM. Your master key for the proxy server.')
 @secure()
 param litellm_master_key string
 
@@ -48,7 +48,7 @@ var tags = {
   'azd-template': 'https://github.com/Build5Nines/azd-litellm'
 }
 
-//var containerAppName = '${abbrs.appContainerApps}litellm-${resourceToken}'
+var containerAppName = '${abbrs.appContainerApps}tika-${resourceToken}'
 
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -57,16 +57,16 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-/*  module monitoring './shared/monitoring.bicep' = {
+module monitoring './shared/monitoring.bicep' = {
   name: 'monitoring'
   params: {
     location: location
     tags: tags
-    logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}litellm-${resourceToken}'
-    applicationInsightsName: '${abbrs.insightsComponents}litellm-${resourceToken}'
+    logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}tika-${resourceToken}'
+    applicationInsightsName: '${abbrs.insightsComponents}tika-${resourceToken}'
   }
   scope: rg
-}  */
+}  
 
 /* module containerRegistry './shared/container-registry.bicep' = {
   name: 'cotainer-registry'
@@ -78,17 +78,17 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   scope: rg
 }  */
 
-/* module appsEnv './shared/apps-env.bicep' = {
+module appsEnv './shared/apps-env.bicep' = {
   name: 'apps-env'
   params: {
-    name: '${abbrs.appManagedEnvironments}litellm-${resourceToken}'
+    name: '${abbrs.appManagedEnvironments}tika-${resourceToken}'
     location: location
     tags: tags 
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
   }
   scope: rg
-} */
+} 
 
 // Deploy PostgreSQL Server via module call.
 module postgresql './shared/postgresql.bicep' = {
@@ -123,26 +123,21 @@ module postgresqlDatabase './shared/postgresql_database.bicep' = {
 //   scope: rg
 // }
 
-// Deploy LiteLLM Container App via module call.
-/* module litellm './app/litellm.bicep' = {
-  name: 'litellm'
+// Deploy Tika Container App via module call.
+module tika './app/tika.bicep' = {
+  name: 'tika'
   params: {
     name: containerAppName
     containerAppsEnvironmentName: appsEnv.outputs.name
     // keyvaultName: keyvault.outputs.name
-    postgresqlConnectionString: 'postgresql://${databaseAdminUser}:${databaseAdminPassword}@${postgresql.outputs.fqdn}/${databaseName}'
-    litellm_master_key: litellm_master_key
-    litellm_salt_key: litellm_salt_key
 
-    litellmContainerAppExists: litellmContainerAppExists
-
-    containerRegistryName: containerRegistry.outputs.name
+    tikaContainerAppExists: tikaContainerAppExists
     containerPort: containerPort
     containerMinReplicaCount: containerMinReplicaCount
     containerMaxReplicaCount: containerMaxReplicaCount
   }
   scope: rg
-} */
+} 
 
 
 /* output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
